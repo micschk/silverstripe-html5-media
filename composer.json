@@ -1,0 +1,23 @@
+{
+    "name": "micschk/silverstripe-html5-media",
+    "description": "A HTML5 media (audio & video) library component for the Silverstripe CMS, with optional cloud transcoding",
+    "type": "silverstripe-module",
+    "keywords": ["silverstripe", "video", "audio", "html5", "transcoding", "oembed"],
+    "license": "MIT",
+    "authors": [{
+        "name": "Michael van Schaik",
+        "homepage": "http://restruct.nl",
+        "role": "Developer"
+    }],
+    "require": {
+        "silverstripe/cms": "3.*",
+        "silverstripe/framework": "3.*",
+        "unclecheese/betterbuttons": "1.*",
+		"heywatch/heywatch": "2.*"
+    },
+    "suggest": {
+    },
+    "extra": {
+        "installer-name": "html5-media"
+    }
+}

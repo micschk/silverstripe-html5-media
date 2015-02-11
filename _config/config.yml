@@ -1,0 +1,8 @@
+name: html5media
+---
+Transcoding:
+  transcode_upload_method: ''
+  transcode_relative_path_ftp: ''
+  transcode_relative_path_base: ''
+  transcode_api_key: ''
+  

@@ -1,0 +1,12 @@
+---
+Name: html5transcoding
+After: framework/routes#rootroutes
+---
+Director:
+  rules:
+    'transcode-log//$Action/$ID/$OtherID': 'Transcode_Controller'
+
+Director:
+  rules:
+    'video-media//$Action/$ID/$OtherID': 'Video_Controller'
+    'audio-media//$Action/$ID/$OtherID': 'Audio_Controller'
