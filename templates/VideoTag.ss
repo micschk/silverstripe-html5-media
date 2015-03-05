@@ -15,8 +15,8 @@
 				 title="No video playback capabilities, please download the video below" />
 				<strong>Download:</strong>
 				<a href="$MP4.URL">"MP4"</a>
-				<a href="$WEBM.URL">"OGG"</a>
-				<a href="$OGV.URL">"WebM"</a>
+				<a href="$WEBM.URL">"WebM"</a>
+				<a href="$OGV.URL">"OGG"</a>
 		</object>
 	</video>
 <% if $Content %>

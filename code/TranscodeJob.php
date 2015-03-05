@@ -40,7 +40,7 @@ class TranscodeJob extends DataObject {
 		"JobID" => "Varchar",
 		"JobStatus" => "Enum('started,done,error','started')",
 		"JobErrorMessage" => "Text",
-		//"JobUpdateContent" => "Text", // json/serialized callback post (don't put in db, contains passwords)
+		"JobUpdateContent" => "Text", // json/serialized callback post (don't put in db, contains passwords)
 		//"TranscodableID" => "Int",
 		"TranscodableClass" => "Varchar",
 	);

@@ -4,6 +4,7 @@ define('HTML5_MEDIA_DIR', basename(dirname(__FILE__)));
 
 // Provide shortcodes [video id=2] or [video id=2]description[/video]
 ShortcodeParser::get('default')->register('video', array('Video_Controller', 'VideoShortCodeHandler'));
+ShortcodeParser::get('default')->register('audio', array('Audio_Controller', 'AudioShortCodeHandler'));
 
 // Add oembed to config
 //Config::inst()->update('Oembed', 'providers', 

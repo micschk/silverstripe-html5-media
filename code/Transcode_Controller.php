@@ -64,10 +64,13 @@ class Transcode_Controller extends Controller {
 			$joblog = TranscodeJob::get()->filter('JobID', (int) $update->id)->first();
 			// return if status already is done (some protection)
 			if($joblog->JobStatus!=="started"){ return "Error: job status not started"; }
-			// save full update into log object -- no, may contain passwords etc.
-			$transcodable = $joblog->Transcodable();
+			
+			// save full update into log object -- no, may contain passwords etc. -- well, fixed but still...
+			
 			// load files into appropriate relations
+			$transcodable = $joblog->Transcodable();
 			$transcodable->loadTranscodedFiles();
+			
 			if(!count(get_object_vars($update->errors))){
 				$joblog->JobErrorMessage = "";
 				$joblog->JobStatus = "done";

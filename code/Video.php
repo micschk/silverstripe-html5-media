@@ -17,6 +17,7 @@ class Video extends TranscodableObject {
 	private static $summary_fields = array( 
 		"Thumbnail" => "Poster",
 		"Name" => "Name",
+		"ShowShortCode" => "ShortCode"
       	//"Description" => "Description"
    	);
 	
@@ -30,42 +31,37 @@ class Video extends TranscodableObject {
 		}
 		
 		// if transcoding started or error
-//		if(Session::get('VideoNotification')){
-//			$num = 0;
-//			foreach(Session::get('VideoNotification') as $type => $message){
-//				$num += 1;
-//				$fields->addFieldToTab("Root.Main", new LiteralField("VideoNotification_".$num, 
-//						"<p class=\"message $type\">$message</p>") );
-//			}
-//			Session::clear('VideoNotification');
-//		}
+		if(Session::get('VideoNotification')){
+			$num = 0;
+			foreach(Session::get('VideoNotification') as $type => $message){
+				$num += 1;
+				$fields->addFieldToTab("Root.Main", new LiteralField("VideoNotification_".$num, 
+						"<p class=\"message $type\">$message</p>") );
+			}
+			Session::clear('VideoNotification');
+		}
 		
 		$UploadSizeMB = 350 * 1024 * 1024; // 350 MB in bytes
 		
 		// Switch between two views; 
 		// - Uploadfield for source file (any type) to be transcoded OR
 		// - Uploadfields for manually transcoded files
-//		$mode = new DropdownField(
-//		  'DefaultView',
-//		  _t('Transcodable.Mode', 'Mode'),
-//		  array(
-//			  'source' => _t('Transcodable.SourceForTranscoding', 'Upload source file for transcoding'),
-//			  'transcoded' => _t('Transcodable.EncodedFormats', 'Upload HTML5 encoded formats')
-//			  )
-//		);
+		$mode = new DropdownField(
+		  'DefaultView',
+		  _t('Transcodable.Mode', 'Mode'),
+		  array(
+			  'source' => _t('Transcodable.SourceForTranscoding', 'Upload source file for transcoding'),
+			  'transcoded' => _t('Transcodable.EncodedFormats', 'Upload HTML5 encoded formats')
+			  )
+		);
 		
 //		$mode->setRightTitle(_t('Transcodable.ModeExplain', 
 //				'Upload a source file to be transcoded to all (missing) HTML5 formats. If your source file is already in one of the HTML5 formats, choose "HTML encoded formats" and upload it into the correct upload field (MP4, WEBM or OGG) to have that used as original for transcoding. Only missing formats will be transcoded.'));
 		
-		$posterfield = UploadField::create("Poster")
-				->setTitle("'Poster' image")
-				->setFolderName('videos')
-				->setAllowedExtensions(array("jpg","jpeg","gif","png"));
-		
 		$sourcehead = LiteralField::create('SourceHead', 
 				'<h2>'._t('Transcodable.VideoFiles', 'Video files').'</h2>'.
-				'<p>'._t('Transcodable.FilesExplain', 
-				'Upload a source file to be transcoded to all (missing) HTML5 formats. If your source file is already in one of the HTML5 formats, choose "HTML encoded formats" and upload it into the correct upload field (MP4, WEBM or OGG) to have that used as original for transcoding. Only missing formats will be transcoded.')
+				'<p style="font-size: 120%; max-width: 640px; line-height: 130%;">'._t('Transcodable.VideoFilesExplain', 
+				'Upload a source file to be transcoded to all (missing) HTML5 formats and a poster image. If your source file is already in one of the HTML5 formats, choose "HTML encoded formats" and upload it into the correct upload field (MP4, WEBM or OGG) to have that used as original for transcoding. Only missing formats/files will be transcoded.')
 				.'</p>');
 		
 		$appextensions = Config::inst()->get('File', 'app_categories');
@@ -77,12 +73,23 @@ class Video extends TranscodableObject {
 				//->setAllowedFileCategories("mov")
         		->setAllowedExtensions($movextensions);
 		$sourcefield->getValidator()->setAllowedMaxFileSize($UploadSizeMB);
+		$sourcefieldHolder = DisplayLogicWrapper::create($sourcefield)
+				->displayIf('DefaultView')->isEqualTo("source")->end();
+		
+		$posterfield = UploadField::create("Poster")
+				->setTitle("'Poster' image")
+				->setFolderName('videos')
+				->setAllowedExtensions(array("jpg","jpeg","gif","png"));
+//		$posterfieldHolder = DisplayLogicWrapper::create($posterfield)
+//				->displayIf('DefaultView')->isEqualTo("source")->end();
 		
 		$mp4field = ChunkedUploadField::create("MP4")
 				->setTitle(_t('Transcodable.MP4video', "MP4 video"))
 				->setFolderName('videos')
         		->setAllowedExtensions(array("mp4"));
 		$mp4field->getValidator()->setAllowedMaxFileSize($UploadSizeMB);
+		$mp4fieldHolder = DisplayLogicWrapper::create($mp4field)
+				->displayIf('DefaultView')->isEqualTo("transcoded")->end();
 //		$mp4field->displayIf("DefaultView")->isEqualTo("transcoded")->end();
 		
 		$webmfield = ChunkedUploadField::create("WEBM")
@@ -90,6 +97,8 @@ class Video extends TranscodableObject {
 				->setFolderName('videos')
         		->setAllowedExtensions(array("webm"));
 		$webmfield->getValidator()->setAllowedMaxFileSize($UploadSizeMB);
+		$webmfieldHolder = DisplayLogicWrapper::create($webmfield)
+				->displayIf('DefaultView')->isEqualTo("transcoded")->end();
 //		$webmfield->displayIf("DefaultView")->isEqualTo("transcoded")->end();
 		
 		$ogvfield = ChunkedUploadField::create("OGV")
@@ -97,20 +106,27 @@ class Video extends TranscodableObject {
 				->setFolderName('videos')
         		->setAllowedExtensions(array("ogg","ogv"));
 		$ogvfield->getValidator()->setAllowedMaxFileSize($UploadSizeMB);
+		$ogvfieldHolder = DisplayLogicWrapper::create($ogvfield)
+				->displayIf('DefaultView')->isEqualTo("transcoded")->end();
 //		$ogvfield->displayIf("DefaultView")->isEqualTo("transcoded")->end();
 		
 		$fields->addFieldsToTab('Root.Main', array(
+						$mode,
 						$sourcehead, 
+						$sourcefieldHolder,
 						$posterfield, 
-						$sourcefield,
-						$mp4field,
-						$webmfield,
-						$ogvfield
+						$mp4fieldHolder,
+						$webmfieldHolder,
+						$ogvfieldHolder
 					) 
 				);
 		
 		return $fields;
 		
+	}
+	
+	public function ShowShortCode(){
+		return '[video id='.$this->ID.']';
 	}
 	
 	public function PosterCropped($x=160,$y=90) { /* 16:9 Ratio */
@@ -156,13 +172,13 @@ class Video extends TranscodableObject {
 		if(!$source && $this->OGVID){ $source = $this->OGV(); }
 		if(!$source || !$source->exists()){ 
 			Session::set('VideoNotification', array(
-				'error' => _t('Transcodable.MissingSource', 
+				'error' => _t('Transcodable.MissingVideoSource', 
 							'Could not find any video to use as source for transcoding')) );
 			return false;
 		}
 		
 		// Build heywatch configuration
-		$hw_config = "# Upload config for Heywatch
+		$hw_config = "# Video config for Heywatch
 			
 set source  = vid_source
 set webhook = vid_webhook
@@ -179,31 +195,37 @@ set webhook = vid_webhook
 
 		$ext = pathinfo($source->getFilename(), PATHINFO_EXTENSION);
 		
+		// if we're on localhost, use development webhook, else use real one
+		if(Config::inst()->get('Transcoding', 'transcode_development_webhook')){
+			$whook = Config::inst()->get('Transcoding', 'transcode_development_webhook');
+		} else {
+			$whook = Transcode_Controller::staticAbsoluteLink();
+		}
 		$replacements = array(
-			'vid_webhook' => Transcode_Controller::staticAbsoluteLink(),
+			'vid_webhook' => $whook,
 			'vid_upload' => Config::inst()->get('Transcoding', 'transcode_upload_method'),
-			'vid_path' => Config::inst()->get('Transcoding', 'transcode_relative_path_ftp'),
+			'vid_path' => Config::inst()->get('Transcoding', 'transcode_relative_video_path_ftp'),
 			'vid_source' => $source->getAbsoluteURL(),
 			'vid_name' => basename($source->getFilename(), ".".$ext) // with extension stripped
 		);
 		$hw_config = strtr($hw_config, $replacements);
-		Debug::dump($hw_config);
+		//Debug::dump($hw_config);
 		
-//		$joblog = TranscodeJob::getOrCreateForTranscodable($this->ID);
-//		$joblog->TranscodableClass = $this->ClassName;
-//		$job = HeyWatch::submit($hw_config, Config::inst()->get('Transcoding', 'transcode_api_key'));
-//		
-//		if($job->{"status"} == "ok") {
-//			// job created
-//			$joblog->JobStatus = "started";
-//			$joblog->JobID = $job->{"id"};
-//		} else {
-//			// job not created...
-//			$joblog->JobStatus = "error";
-//			//$joblog->JobErrorCode = $job->{"error_code"};
-//			$joblog->JobErrorMessage = $job->{"error_message"};
-//		}
-//		$joblog->write();
+		$joblog = TranscodeJob::getOrCreateForTranscodable($this->ID);
+		$joblog->TranscodableClass = $this->ClassName;
+		$job = HeyWatch::submit($hw_config, Config::inst()->get('Transcoding', 'transcode_api_key'));
+		
+		if($job->{"status"} == "ok") {
+			// job created
+			$joblog->JobStatus = "started";
+			$joblog->JobID = $job->{"id"};
+		} else {
+			// job not created...
+			$joblog->JobStatus = "error";
+			//$joblog->JobErrorCode = $job->{"error_code"};
+			$joblog->JobErrorMessage = $job->{"error_message"};
+		}
+		$joblog->write();
 		
     }
 	
@@ -218,7 +240,7 @@ set webhook = vid_webhook
 		
 		$ext = pathinfo($source->getFilename(), PATHINFO_EXTENSION);
 		$vid_name = basename($source->getFilename(), ".".$ext); // with extension stripped
-		$vid_path = Config::inst()->get('Transcoding', 'transcode_relative_path_base');
+		$vid_path = Config::inst()->get('Transcoding', 'transcode_relative_video_path_base');
 		
 		$poster_path = "$vid_path$vid_name-01.jpg";
 		$mp4_path = "$vid_path$vid_name.mp4";
