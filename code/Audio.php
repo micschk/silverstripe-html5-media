@@ -80,7 +80,7 @@ class Audio extends TranscodableObject {
 		$oggfield = ChunkedUploadField::create("OGG")
 				->setTitle(_t('Transcodable.OGGaudio', "OGG audio"))
 				->setFolderName('audio')
-        		->setAllowedExtensions(array("webm"));
+        		->setAllowedExtensions(array("ogg"));
 		$oggfield->getValidator()->setAllowedMaxFileSize($UploadSizeMB);
 		$oggfieldHolder = DisplayLogicWrapper::create($oggfield)
 				->displayIf('DefaultView')->isEqualTo("transcoded")->end();
@@ -93,6 +93,10 @@ class Audio extends TranscodableObject {
 						$oggfieldHolder
 					) 
 				);
+		
+		if($this->ID){
+			$fields->addFieldsToTab('Root.Main', new HeaderField('scode', $this->ShowShortCode()), 'Name');
+		}
 		
 		return $fields;
 		
@@ -119,6 +123,15 @@ class Audio extends TranscodableObject {
         }
         return $fields;
     }
+	
+	/** 
+	 * Test if transcoding complete
+	 * @param type $missingOnly
+	 */
+	public function transcodingComplete() {
+		if($this->MP3ID && $this->OGGID){ return true; }
+		return false;
+	}
 	
 	/** 
 	 * Transcode missing formats from source
@@ -176,11 +189,15 @@ set webhook = aud_webhook
 			// job created
 			$joblog->JobStatus = "started";
 			$joblog->JobID = $job->{"id"};
+			// Feedback to user
+			Session::set('VideoNotification', array('good'=>'Transcoding started'));
 		} else {
 			// job not created...
 			$joblog->JobStatus = "error";
 			//$joblog->JobErrorCode = $job->{"error_code"};
 			$joblog->JobErrorMessage = $job->{"error_message"};
+			// Feedback to user
+			Session::set('VideoNotification', array('bad'=>'Transcoding error'));
 		}
 		$joblog->write();
 		

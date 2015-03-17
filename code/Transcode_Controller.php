@@ -16,13 +16,18 @@ class Transcode_Controller extends Controller {
 		"index",
     );
 	
+//	private static $url_handlers = array(
+//        'transcode-log/$Action/$ID' => 'index'
+//    );
+	
     public function init() {
         parent::init();
     }
 	
     public static function staticAbsoluteLink($action = null) {
         return Controller::join_links(
-            Director::absoluteURL(BASE_URL),
+            //Director::absoluteURL(BASE_URL),
+			Director::absoluteURL(Director::BaseURL()),
             self::$url_segment,
             $action
         );
@@ -66,17 +71,19 @@ class Transcode_Controller extends Controller {
 			if($joblog->JobStatus!=="started"){ return "Error: job status not started"; }
 			
 			// save full update into log object -- no, may contain passwords etc. -- well, fixed but still...
+			//format_id
 			
 			// load files into appropriate relations
 			$transcodable = $joblog->Transcodable();
 			$transcodable->loadTranscodedFiles();
 			
-			if(!count(get_object_vars($update->errors))){
-				$joblog->JobErrorMessage = "";
-				$joblog->JobStatus = "done";
-			} else {
+			if(count(get_object_vars($update->errors))){
 				$joblog->JobErrorMessage = json_encode($update->errors);
 				$joblog->JobStatus = "error";
+			} else if ($transcodable->transcodingComplete()) {
+				// set status to done when complete...
+				$joblog->JobErrorMessage = "";
+				$joblog->JobStatus = "done";
 			}
 			// write logfile
 			$joblog->write();

@@ -1,14 +1,12 @@
 ---
 Name: html5transcoding
-After: framework/routes#rootroutes
+After: framework/routes#coreroutes
 ---
 # voor pingbacks
 Director:
   rules:
     'transcode-log//$Action/$ID/$OtherID': 'Transcode_Controller'
-
-# voor OEMBEDS (NOT working yet...)
-Director:
-  rules:
+    
+    # voor OEMBEDS (NOT working yet...)
     'video-media//$Action/$ID/$OtherID': 'Video_Controller'
     'audio-media//$Action/$ID/$OtherID': 'Audio_Controller'

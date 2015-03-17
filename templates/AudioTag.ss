@@ -1,5 +1,5 @@
 <div class="captionImage html5_media html5_audio">
-	<audio controls>
+	<audio controls preload="none">
 		<!-- MP4 must be first for iPad! -->
 		<source src="$MP3.URL" type="audio/mpeg"  /><!-- Safari / Webkit / iOS, IE9 -->
 		<source src="$OGG.URL" type="audio/ogg"  /><!-- Firefox3.6+ / Opera 10.5+ -->

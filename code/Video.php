@@ -25,10 +25,10 @@ class Video extends TranscodableObject {
 		
 		$fields = parent::getCMSFields();
 
-		if($this->JobID){
-			$fields->addFieldToTab("Root.Main", new LiteralField("JobID", 
-		"<p class=\"message good\">Transcoding job ID: {$this->JobID}, Status: {$this->JobStatus}</p>"));
-		}
+//		if($this->JobID){
+//			$fields->addFieldToTab("Root.Main", new LiteralField("JobID", 
+//		"<p class=\"message good\">Transcoding job ID: {$this->JobID}, Status: {$this->JobStatus}</p>"));
+//		}
 		
 		// if transcoding started or error
 		if(Session::get('VideoNotification')){
@@ -121,6 +121,10 @@ class Video extends TranscodableObject {
 					) 
 				);
 		
+		if($this->ID){
+			$fields->addFieldsToTab('Root.Main', new HeaderField('scode', $this->ShowShortCode()), 'Name');
+		}
+		
 		return $fields;
 		
 	}
@@ -158,6 +162,15 @@ class Video extends TranscodableObject {
         }
         return $fields;
     }
+	
+	/** 
+	 * Test if transcoding complete
+	 * @param type $missingOnly
+	 */
+	public function transcodingComplete() {
+		if($this->MP4ID && $this->WEBMID && $this->OGVID){ return true; }
+		return false;
+	}
 	
 	/** 
 	 * Transcode missing formats from source
@@ -212,20 +225,27 @@ set webhook = vid_webhook
 		//Debug::dump($hw_config);
 		
 		$joblog = TranscodeJob::getOrCreateForTranscodable($this->ID);
+		//Debug::dump('joblog OK');
 		$joblog->TranscodableClass = $this->ClassName;
 		$job = HeyWatch::submit($hw_config, Config::inst()->get('Transcoding', 'transcode_api_key'));
+		//Debug::dump('job submit OK');
 		
 		if($job->{"status"} == "ok") {
 			// job created
 			$joblog->JobStatus = "started";
 			$joblog->JobID = $job->{"id"};
+			// Feedback to user
+			Session::set('VideoNotification', array('good'=>'Transcoding started'));
 		} else {
 			// job not created...
 			$joblog->JobStatus = "error";
 			//$joblog->JobErrorCode = $job->{"error_code"};
 			$joblog->JobErrorMessage = $job->{"error_message"};
+			// Feedback to user
+			Session::set('VideoNotification', array('bad'=>'Transcoding error'));
 		}
 		$joblog->write();
+		//Debug::dump('joblog write OK');
 		
     }
 	

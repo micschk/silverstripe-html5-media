@@ -20,6 +20,6 @@
 		</object>
 	</video>
 <% if $Content %>
-	<div class="caption">$Content</div>
+	<div class="caption" style="width: {$Poster.Width}px;">$Content</div>
 <% end_if %>
 </div>

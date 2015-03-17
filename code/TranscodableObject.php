@@ -67,11 +67,19 @@ class TranscodableObject extends DataObject {
     );
 	
 	/** 
+	 * Test if transcoding complete
+	 * @param type $missingOnly
+	 */
+	public function transcodingComplete() {
+		user_error('Subclass of TranscodableObject should implement transcodingComplete()');
+	}
+	
+	/** 
 	 * Transcode missing formats from source
 	 * @param type $missingOnly
 	 */
 	public function transcode($missingOnly = true) {
-		user_error('Subclass of MediaObject should implement transcode()');
+		user_error('Subclass of TranscodableObject should implement transcode()');
     }
 	
 	//

@@ -25,15 +25,16 @@ set webhook = https://app.heywatch.com/pings/54ca174d/micschk
 class TranscodeJob extends DataObject {
 	
 	public static function getOrCreateForTranscodable($TranscodableID){
-		$job = TranscodeJob::get()->filter("TranscodableID",$TranscodableID)->first();
-		if($job){ 
-			return $job;
-		} else {
+		// new transcodejob for every ... transcodejob (no reusing of existing job objects)
+//		$job = TranscodeJob::get()->filter("TranscodableID",$TranscodableID)->first();
+//		if($job){ 
+//			return $job;
+//		} else {
 			$job = new TranscodeJob();
 			$job->TranscodableID = $TranscodableID;
 			$job->write();
 			return $job;
-		}
+//		}
 	}
 	
 	private static $db = array (
